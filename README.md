@@ -1,0 +1,1 @@
+# plsql_window_functions_-27868-_-Walet-Abdoul-Salam-Fatma-
