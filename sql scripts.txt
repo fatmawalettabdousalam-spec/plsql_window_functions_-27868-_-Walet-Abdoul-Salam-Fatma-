@@ -1,0 +1,128 @@
+1. Creating the tables
+
+CREATE TABLE Customers (
+    cust_id NUMBER PRIMARY KEY,
+    cust_name VARCHAR2(100),
+    region VARCHAR2(50),
+    email VARCHAR2(100)
+);
+
+CREATE TABLE Products (
+    prod_id NUMBER PRIMARY KEY,
+    prod_name VARCHAR2(100),
+    category VARCHAR2(50),
+    price NUMBER(10, 2)
+);
+
+CREATE TABLE Sales (
+    sale_id NUMBER PRIMARY KEY,
+    cust_id NUMBER REFERENCES Customers(cust_id),
+    prod_id NUMBER REFERENCES Products(prod_id),
+    sale_date DATE,
+    quantity NUMBER,
+    total_amount NUMBER(10, 2)
+);
+
+2. Inserting the data
+
+INSERT INTO Customers VALUES (101, 'Fatma Walet', 'North', 'fatma@email.com');
+INSERT INTO Customers VALUES (102, 'Abdoul Salam', 'South', 'abdoul@email.com');
+INSERT INTO Customers VALUES (103, 'Doria Shaw', 'North', 'doria@email.com');
+INSERT INTO Customers VALUES (104, 'Zeid Ag', 'South', 'zeid@email.com');
+INSERT INTO Customers VALUES (105, 'Adyl Ag', 'West', 'adyl@email.com');
+INSERT INTO Customers VALUES (106, 'Hana Ali', 'South', 'hanaali@email.com');
+INSERT INTO Customers VALUES (107, 'Ange Aya', 'East', 'angeya@email.com');
+INSERT INTO Customers VALUES (108, 'Sidi', 'West', 'sidimed@email.com');
+
+
+
+INSERT INTO Products VALUES (1, 'MacBook Pro', 'Laptop', 2500);
+INSERT INTO Products VALUES (2, 'iPhone 15', 'Mobile', 1200);
+INSERT INTO Products VALUES (3, 'AirPods Pro', 'Audio', 250);
+INSERT INTO Products VALUES (4, 'Galaxy S23', 'Mobile', 1100);
+INSERT INTO Products VALUES (5, 'iPad Air', 'Tablet', 600);
+INSERT INTO Products VALUES (6, 'JBL Boombox', 'Speaker', 550);
+INSERT INTO Products VALUES (7, 'Lenovo Thinkpad', 'Laptop', 1400);
+INSERT INTO Products VALUES (8, 'Mechanical Keyboard', 'Accessory', 150);
+
+
+
+INSERT INTO Sales VALUES (501, 101, 1, TO_DATE('2026-01-05', 'YYYY-MM-DD'), 1, 2500);
+INSERT INTO Sales VALUES (502, 101, 3, TO_DATE('2026-01-10', 'YYYY-MM-DD'), 2, 500);
+INSERT INTO Sales VALUES (503, 102, 2, TO_DATE('2026-01-15', 'YYYY-MM-DD'), 3, 1200);
+INSERT INTO Sales VALUES (504, 104, 1, TO_DATE('2026-02-01', 'YYYY-MM-DD'), 1, 2500);
+INSERT INTO Sales VALUES (505, 106, 2, TO_DATE('2026-02-05', 'YYYY-MM-DD'), 1, 1200);
+INSERT INTO Sales VALUES (506, 105, 4, TO_DATE('2026-02-10', 'YYYY-MM-DD'), 2, 1100);
+INSERT INTO Sales VALUES (507, 108, 5, TO_DATE('2026-02-15', 'YYYY-MM-DD'), 2, 600);
+INSERT INTO Sales VALUES (508, 101, 6, TO_DATE('2026-02-20', 'YYYY-MM-DD'), 2, 350);
+
+COMMIT;
+
+STEP 4:SQL JOINS
+
+1. INNER JOIN
+
+SELECT Customers.cust_name, Products.prod_name
+FROM Customers,
+JOIN Sales ON Customers.cust_id = Sales.cust_id
+JOIN Products ON Products.prod_id = Sales.prod_id;
+
+2. LEFT JOIN
+
+SELECT cust_name, sale_id
+FROM Customers
+LEFT JOIN Sales ON Customers.cust_id = Sales.cust_id
+WHERE sale_id IS NULL;
+
+3. RIGHT JOIN
+
+SELECT prod_name, sale_id
+FROM Sales
+RIGHT JOIN Products ON Sales.prod_id = Products.prod_id
+WHERE sale_id IS NULL;
+
+4. FULL JOIN
+
+SELECT cust_name, prod_name
+FROM Customers
+FULL JOIN Sales ON Customers.cust_id = Sales.cust_id
+FULL JOIN Products ON Sales.prod_id = Products.prod_id;
+
+5.SELF JOIN
+
+SELECT A.cust_name, B.cust_name, A.region
+FROM Customers A, Customers B
+WHERE A.region = B.region
+AND A.cust_id < B.cust_id;
+
+STEP 5:WINDOWS FUNCTIONS
+Ranking Functions
+
+SELECT prod_name, total_amount,
+       RANK()       OVER (ORDER BY total_amount DESC) as rank_pos,
+       DENSE_RANK() OVER (ORDER BY total_amount DESC) as dense_pos
+FROM Sales, Products
+WHERE Sales.prod_id = Products.prod_id;
+
+2. Aggregate Window Functions
+
+SELECT sale_id, total_amount,
+       SUM(total_amount) OVER (ORDER BY total_amount ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as rows_total,
+       SUM(total_amount) OVER (ORDER BY total_amount RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) as range_total
+FROM Sales;
+
+
+3. Navigation Functions
+
+SELECT sale_id, total_amount,
+       LAG(total_amount) OVER (ORDER BY sale_id) as previous_sale,
+       LEAD(total_amount) OVER (ORDER BY sale_id) as next_sale
+FROM Sales;
+
+
+
+4. Distribution Functions
+
+SELECT  cust_id, total_amount,
+       NTILE(4) OVER (ORDER BY total_amount DESC) as quartile
+FROM Sales;
